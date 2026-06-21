@@ -1,0 +1,14 @@
+# Sandbox pipeline: dump the runner environment for whichever event fired, so the
+# GIT*/CI* values can be copied into contextinfo's test fixtures.
+#
+# Trigger different scenarios to capture them:
+#   - push to a branch -> gitlab_push_<branch>
+#   - push a tag       -> gitlab_tag_<tag>   (CI_COMMIT_TAG set)
+#   - "Run pipeline"   -> a web/manual pipeline
+printenv:
+  image: debian:stable-slim
+  script:
+    - echo "CI_PIPELINE_SOURCE = $CI_PIPELINE_SOURCE"
+    - echo "CI_COMMIT_BRANCH   = $CI_COMMIT_BRANCH"
+    - echo "CI_COMMIT_TAG      = $CI_COMMIT_TAG"
+    - printenv | sort | grep -E '^(GIT|CI)' | grep -viE 'token|secret|password'
