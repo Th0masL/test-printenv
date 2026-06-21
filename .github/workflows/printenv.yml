@@ -1,0 +1,30 @@
+name: printenv
+
+# Sandbox workflow: dump the runner environment for whichever event fired, so the
+# GIT*/CI* values can be copied into contextinfo's test fixtures.
+#
+# Trigger different scenarios to capture them:
+#   - push to a branch  -> github_push_<branch>
+#   - push a tag        -> a tag event (GITHUB_REF_TYPE=tag)
+#   - publish a release -> a release event
+#   - "Run workflow"    -> workflow_dispatch
+on:
+  push:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  printenv:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Event summary
+        run: |
+          echo "GITHUB_EVENT_NAME = ${{ github.event_name }}"
+          echo "GITHUB_REF        = $GITHUB_REF"
+          echo "GITHUB_REF_TYPE   = $GITHUB_REF_TYPE"
+      - name: Environment variables
+        run: printenv | sort | grep -E '^(GIT|RUNNER_|CI)' | grep -viE 'token|secret|password'
