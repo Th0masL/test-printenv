@@ -5,6 +5,9 @@
 #   - push to a branch -> gitlab_push_<branch>
 #   - push a tag       -> gitlab_tag_<tag>   (CI_COMMIT_TAG set)
 #   - "Run pipeline"   -> a web/manual pipeline
+#   - scheduled run    -> create a schedule in the UI (Build > Pipeline
+#     schedules) with cron "0 0 * * 1" / UTC; this job runs on it automatically
+#     (CI_PIPELINE_SOURCE=schedule). GitLab schedules can't be set in this file.
 printenv:
   image: debian:stable-slim
   script:

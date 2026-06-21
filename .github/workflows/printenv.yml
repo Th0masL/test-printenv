@@ -8,11 +8,14 @@ name: printenv
 #   - push a tag        -> a tag event (GITHUB_REF_TYPE=tag)
 #   - publish a release -> a release event
 #   - "Run workflow"    -> workflow_dispatch
+#   - weekly schedule   -> a schedule event
 on:
   push:
   release:
     types: [published]
   workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * 1" # 00:00 UTC every Monday
 
 permissions:
   contents: read
