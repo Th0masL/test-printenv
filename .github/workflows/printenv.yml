@@ -5,12 +5,14 @@ name: printenv
 #
 # Trigger different scenarios to capture them:
 #   - push to a branch  -> github_push_<branch>
+#   - open a PR         -> a pull_request event (runs on the PR, before merge)
 #   - push a tag        -> a tag event (GITHUB_REF_TYPE=tag)
 #   - publish a release -> a release event
 #   - "Run workflow"    -> workflow_dispatch
 #   - weekly schedule   -> a schedule event
 on:
   push:
+  pull_request:
   release:
     types: [published]
   workflow_dispatch:

@@ -5,11 +5,19 @@
 #   - push to a branch -> gitlab_push_<branch>
 #   - push a tag       -> gitlab_tag_<tag>   (CI_COMMIT_TAG set)
 #   - "Run pipeline"   -> a web/manual pipeline
+#   - open a merge request -> a merge_request_event pipeline (the rules below opt
+#     in; without them GitLab only runs the branch pipeline, i.e. source=push)
 #   - scheduled run    -> create a schedule in the UI (Build > Pipeline
 #     schedules) with cron "0 0 * * 1" / UTC; this job runs on it automatically
 #     (CI_PIPELINE_SOURCE=schedule). GitLab schedules can't be set in this file.
 printenv:
   image: debian:stable-slim
+  # First rule opts the job into merge-request pipelines; the second keeps it on
+  # the usual branch/tag/schedule/web pipelines. With an open MR this can produce
+  # both a branch and an MR pipeline — harmless for a diagnostic.
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_PIPELINE_SOURCE != "merge_request_event"
   script:
     - echo "CI_PIPELINE_SOURCE = $CI_PIPELINE_SOURCE"
     - echo "CI_COMMIT_BRANCH   = $CI_COMMIT_BRANCH"
