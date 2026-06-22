@@ -1,0 +1,32 @@
+# Sandbox config: dump the runner environment for whichever event fired, so the
+# GIT*/CI*/CIRCLE* values can be inspected for each kind of trigger.
+#
+# Trigger different scenarios to capture them:
+#   - push to a branch -> CIRCLE_BRANCH set
+#   - push a tag       -> CIRCLE_TAG set (the tags filter below is required;
+#     CircleCI skips tag pushes unless a workflow explicitly filters for them)
+version: 2.1
+
+jobs:
+  printenv:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - run:
+          name: Event summary
+          command: |
+            echo "CIRCLE_BRANCH       = $CIRCLE_BRANCH"
+            echo "CIRCLE_TAG          = $CIRCLE_TAG"
+            echo "CIRCLE_PULL_REQUEST = $CIRCLE_PULL_REQUEST"
+      - run:
+          name: Environment variables
+          command: printenv | sort | grep -E '^(GIT|CI|CIRCLE)' | grep -viE 'token|secret|password'
+
+workflows:
+  printenv:
+    jobs:
+      - printenv:
+          # Run on every branch (the default) and every tag.
+          filters:
+            tags:
+              only: /.*/
