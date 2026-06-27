@@ -1,7 +1,9 @@
 # Sandbox config: dump the runner environment for whichever event fired, so the
 # GIT*/CI*/CIRCLE* values can be inspected for each kind of trigger. It also prints
 # a git-derived context block (commit subject, parent count / merge, committer) so
-# we can compare what `git` itself reports across providers and events.
+# we can compare what `git` itself reports across providers and events. Finally it
+# downloads the latest released contextinfo binary and runs it, to show what the
+# tool concludes from the same run.
 #
 # Trigger different scenarios to capture them:
 #   - push to a branch -> CIRCLE_BRANCH set
@@ -37,6 +39,24 @@ jobs:
       - run:
           name: Environment variables
           command: printenv | sort | grep -E '^(GIT|CI|CIRCLE)' | grep -viE 'token|secret|password'
+      - run:
+          name: What contextinfo detects (latest release)
+          command: |
+            echo "=== contextinfo (latest release) ==="
+            # Resolve the latest tag (e.g. v0.4.0), then download the asset for this
+            # platform. The tag keeps the "v"; the asset name drops it (0.4.0).
+            TAG=$(curl -fsSL https://api.github.com/repos/Th0masL/contextinfo/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') || true
+            if [ -z "$TAG" ]; then
+              echo "(could not resolve latest release — skipping)"
+            else
+              VER=${TAG#v}
+              OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+              ARCH=$(uname -m); case "$ARCH" in x86_64) ARCH=amd64 ;; aarch64|arm64) ARCH=arm64 ;; esac
+              curl -fsSL -o ./contextinfo "https://github.com/Th0masL/contextinfo/releases/download/${TAG}/contextinfo_${VER}_${OS}_${ARCH}"
+              chmod +x ./contextinfo
+              ./contextinfo --version
+              ./contextinfo --format=text
+            fi
 
 workflows:
   printenv:
