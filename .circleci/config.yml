@@ -1,5 +1,7 @@
 # Sandbox config: dump the runner environment for whichever event fired, so the
-# GIT*/CI*/CIRCLE* values can be inspected for each kind of trigger.
+# GIT*/CI*/CIRCLE* values can be inspected for each kind of trigger. It also prints
+# a git-derived context block (commit subject, parent count / merge, committer) so
+# we can compare what `git` itself reports across providers and events.
 #
 # Trigger different scenarios to capture them:
 #   - push to a branch -> CIRCLE_BRANCH set
@@ -18,6 +20,20 @@ jobs:
             echo "CIRCLE_BRANCH       = $CIRCLE_BRANCH"
             echo "CIRCLE_TAG          = $CIRCLE_TAG"
             echo "CIRCLE_PULL_REQUEST = $CIRCLE_PULL_REQUEST"
+      - checkout
+      - run:
+          name: Git context
+          command: |
+            echo "in_work_tree : $(git rev-parse --is-inside-work-tree 2>/dev/null || echo no)"
+            echo "head_sha     : $(git rev-parse HEAD 2>/dev/null)"
+            echo "branch_symref: $(git symbolic-ref --short HEAD 2>/dev/null || echo '(detached)')"
+            echo "parents      : $(git show -s --format='%P' HEAD 2>/dev/null)"
+            echo "parent_count : $(git show -s --format='%P' HEAD 2>/dev/null | wc -w)"
+            echo "subject      : $(git log -1 --format='%s' 2>/dev/null)"
+            echo "committer    : $(git log -1 --format='%cn <%ce>' 2>/dev/null)"
+            echo "author       : $(git log -1 --format='%an <%ae>' 2>/dev/null)"
+            echo "--- recent history (oneline) ---"
+            git log --oneline --decorate -5 2>/dev/null || true
       - run:
           name: Environment variables
           command: printenv | sort | grep -E '^(GIT|CI|CIRCLE)' | grep -viE 'token|secret|password'
