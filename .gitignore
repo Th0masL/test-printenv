@@ -1,0 +1,3 @@
+# Scratch dir for CI-downloaded tools (e.g. the contextinfo binary); ignored so
+# the download never dirties the working tree or shows up in files_checksum.
+tmp/

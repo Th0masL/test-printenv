@@ -52,10 +52,10 @@ jobs:
               VER=${TAG#v}
               OS=$(uname -s | tr '[:upper:]' '[:lower:]')
               ARCH=$(uname -m); case "$ARCH" in x86_64) ARCH=amd64 ;; aarch64|arm64) ARCH=arm64 ;; esac
-              curl -fsSL -o ./contextinfo "https://github.com/Th0masL/contextinfo/releases/download/${TAG}/contextinfo_${VER}_${OS}_${ARCH}"
-              chmod +x ./contextinfo
-              ./contextinfo --version
-              ./contextinfo --format=text
+              mkdir -p tmp && curl -fsSL -o tmp/contextinfo "https://github.com/Th0masL/contextinfo/releases/download/${TAG}/contextinfo_${VER}_${OS}_${ARCH}"
+              chmod +x tmp/contextinfo
+              tmp/contextinfo --version
+              tmp/contextinfo --format=text
             fi
 
 workflows:
